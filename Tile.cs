@@ -5,58 +5,122 @@ using UnityEngine;
 public class Tile : MonoBehaviour
 {
 
-    public TileType Type; //we created an enum, and created a Variable of type of our enum 'TitleType'. Default value is first value in enum
-
-    //lets create this method that sets the type to the parsed type, do it. what is the parameters/arguments of the method 
-
-    //lets modify this script so it sets the color when type is set, we need access to SpriteRenderer component before we can do that.
-
+    public TileType Type; //variable to refer to the enum var
     //declare a SpriteRenderer object
     SpriteRenderer rend;
 
-    //cuz wewerking with 2D sprite. on 3D objects we have MeshRenderer on 2D we have SpriteRenderer. get it?
+    private Vector2 firstTouchPosition; //when the mouse is first clicked or screen first touched
+    private Vector2 finalTouchPosition; //when lmb is released or finger lifted off screen
+    public float SwipeAngle = 0;
+    public int X;
+    public int Y;
+    Board board; //reference to the board
+
+
 
     private void Awake()
     {
-
-        rend = GetComponent<SpriteRenderer>(); //GetComponent() tries to fetch a component attached to the object this script is attached to.
-        //in the <> brackets you specify what type of Component you are looking for. Nao reeds?ye y sprite rendrer?
+        rend = GetComponent<SpriteRenderer>();
+        board = FindObjectOfType<Board>();
+    }
+    private void Update()
+    {
+        X = (int)transform.position.x;
+        Y = (int)transform.position.y;
+        //store the position of this tile
     }
 
-
+    #region Set Up
     public void SetType(TileType tileType)
     {
-        //good, try to use informative variable names tho
         Type = tileType;
 
-        //nao lets set the colour. we have to see wat type is set tho. lets use switch statement
         switch (tileType)
         {
-            //switch checks what case it is. case = what is the value of switched item (tileType) this time
-
-            case TileType.Blue:
-                //if blue, set color 2 blu
-                rend.color = Color.blue;
-                //break is to mek it brek out of switch. Naht a loop. case? ye it ends switch statement there at break;
-                //cuz we don't need 2 do anything else nao after we set the color
-                break;
-
+            //switch checks what case it is. case = what is the value of switched item (tileType)
+            //use the sprite renderer to render the tiles in different colours
             case TileType.Red:
                 rend.color = Color.red;
+                break;
+
+            case TileType.Blue:
+                rend.color = Color.blue;
+                break;
+
+            case TileType.Yellow:
+                rend.color = Color.yellow;
                 break;
 
             case TileType.Green:
                 rend.color = Color.green;
                 break;
 
-            case TileType.Yellow:
-                rend.color = Color.yellow;
+            case TileType.Cyan:
+                rend.color = Color.cyan;
                 break;
         }
 
     }
 
-    //ok? y u no see? i  r plez 48 solitair u ahs hatton yee. u understands till nao?yeeeo k. lez go bak 2 Board script
+
+    #endregion Set Up
+
+    private void OnMouseDown()
+    {
+        //record where the first press or click is
+        firstTouchPosition = Input.mousePosition;
+        Debug.Log(Input.mousePosition);
+    }
+
+    private void OnMouseUp()
+    {
+        //record where the release is
+        finalTouchPosition = Input.mousePosition;
+        Movement();
+    }
+
+    private void Movement()
+    {
+        float fltX = finalTouchPosition.x - firstTouchPosition.x; //direction traveled on x axis
+        float fltY = finalTouchPosition.y - firstTouchPosition.y; //direction traveled on y axis
+        float intX = Mathf.Abs(fltX); //distance traveled on x axis
+        float intY = Mathf.Abs(fltY); //distance traveled on y axis
+
+        if(intX > intY)
+        {
+            //move horizontally
+            if(fltX > 0)
+            {
+                //move right
+                transform.position = new Vector3(X + 1, Y, 10f);
+                board.SwapTile(X, Y, 0); //ask the Board class to swap tiles and update the array
+            } else
+            {
+                //move left
+                transform.position = new Vector3(X - 1, Y, 10f);
+                board.SwapTile(X, Y, 1); //ask the Board class to swap tiles and update the array
+            }
+
+        } else
+        {
+            //move vertically
+            if(fltY > 0)
+            {
+                //move up
+                transform.position = new Vector3(X, Y + 1, 10f);
+                board.SwapTile(X, Y, 2); //ask the Board class to swap tiles and update the array
+            } else
+            {
+                //move down
+                transform.position = new Vector3(X, Y - 1, 10f);
+                board.SwapTile(X, Y, 3); //ask the Board class to swap tiles and update the array
+            }
+        }
+
+
+    }
+
+
 }
 
 public enum TileType
@@ -65,14 +129,8 @@ public enum TileType
     Red, //=1
     Blue, //=2
     Yellow, //=3
-    Green //=4
+    Green, //=4
+    Cyan, //=5
 
-    //get it? yes
+
 }
-
-
-/*
- * Ok, about Enums. Enums are basically int values assigned a keyword. Useful when u have a limited set of values to be assigned
- * Like Weapon types, ammo type etc.
- * if u don't specify the int value corresponding to each Enum item, it starts with 0
- */
